@@ -1,0 +1,71 @@
+clc; clear all; close all;
+%% Parameters
+S0 = 0;
+K=15; % Strike price
+r=0.1;% rate
+sigma=0.25; 
+g=1;
+%time
+timesteps = [50000];
+T=0.5;
+
+%space
+spacesteps = 1000;
+Smax=4*K;
+
+
+%% Boundrary Conditions & Final conditions and vectors
+for l = 1:length(timesteps)
+    dS=Smax/spacesteps;
+    dt=T/timesteps(l);
+
+    V=zeros(spacesteps+1,timesteps(l)+1); %matval(space,time)
+    s=linspace(0,Smax,spacesteps+1);
+    t=linspace(0,T,timesteps(l)+1);
+
+    %Boundary
+    V(1,:)=0;
+    V(spacesteps+1,:)=Smax - K*exp(-r*(T-t));
+
+    %Final
+    V(:,timesteps(l)+1)=max(s - K,0);
+
+    % Setup Tridiagonal Matrix
+    a=-r*s/(2*dS) + sigma^2*s.^2/(2*dS^2);
+    b=-sigma^2*s.^2/(dS^2)-r;
+    c=r*s/(2*dS) + sigma^2*s.^2/(2*dS^2);
+    A=diag(a(3:spacesteps),-1)+diag(b(2:spacesteps))+diag(c(2:spacesteps-1),1);
+
+    % Solve LS
+    I = eye(length(A));
+    cextra = zeros(spacesteps-1,1);
+    for j=timesteps(l):-1:1
+        cextra(end)=c(end-1)*V(end,j)*dt;
+        V(2:spacesteps,j) = (I - dt*A)\(V(2:spacesteps,j+1) + cextra);
+    end
+
+    for i = 1:length(s)
+        Vexact(i) = bsexact(sigma, r, K, T, s(i));
+    end
+    errorMax(l) = max(abs(V(:,1)-Vexact'));
+end
+
+
+%% Plots
+figure()
+plot(s,Vexact,s,V(:,1))
+legend('Analytical','Numerical (Explicit)');
+%Error propagation plot
+figure()
+plot(s,abs(V(:,1)-Vexact'))
+title('Error propagation')
+disp(max(abs(V(:,1)-Vexact')))
+%size of error
+figure()
+loglog(timesteps,errorMax)
+hold on
+scatter(timesteps,errorMax)
+grid on
+xlabel('Number of time discretizations')
+ylabel('Maximum absolute error')
+
