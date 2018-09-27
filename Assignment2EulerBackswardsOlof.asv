@@ -72,15 +72,28 @@ ylabel('Maximum absolute error')
 %% Delta calculation
 %forward difference
 for i = 1:length(s)-1
-   approxDelta(i) =  (V(i+1,1)-V(i,1))/dS;
+   Vtest(i) =  (V(i+1,1)-V(i,1))/dS;
+end
+
+%backward difference
+index = 1;
+for i = 1:length(s)-1
+   Vtest2(index) =  (V(i,1)-V(i-1,1))/dS;
+   i
 end
 
 Vdelta = analyticalDelta(sigma,r,K,T,s(1:(end-1)));
-deltaerror = abs(approxDelta-Vdelta);
+deltaerror = abs(Vtest-Vdelta);
 deltaerror2 = abs(Vtest2-Vdelta);
 
 figure()
-plot(approxDelta)
+plot(Vtest)
+hold on
+plot(Vdelta)
+hold off
+legend('Numerical','Analytical')
+figure()
+plot(Vtest2)
 hold on
 plot(Vdelta)
 hold off
@@ -89,5 +102,8 @@ legend('Numerical','Analytical')
 figure()
 plot(deltaerror)
 title('forward difference')
+figure()
+plot(deltaerror2)
+title('backward difference')
 
 
