@@ -2,7 +2,7 @@ clc; clear; close all;
 
 %% Parameters & vectors
 S0 = 14;
-deltaS = 0.01;
+deltaS = 0.1;
 S0deltaS = S0-deltaS;
 K = 15;
 r = 0.1;
@@ -55,7 +55,7 @@ errorT = zeros(1,sizeoft); %time error
 % Varying number of time steps 
 for j = 1:sizeoft
     V = zeros(1,M(sizeofM));
-    Vprime = zeros(1,M(sizeofM));
+    vprime = zeros(1,M(sizeofM));
     deltat = timestep(j);
     squareroot = sqrt(deltat);
     
@@ -64,12 +64,11 @@ for j = 1:sizeoft
         S = S0;
         Sprime = S0deltaS;
         for t = t0:deltat:T
-           randomnumber = randn;
-           S = S + r*S*deltat + sigma*S*squareroot*randomnumber;
-           Sprime = Sprime + r*Sprime*deltat + sigma*Sprime*squareroot*randomnumber;
+           S = S + r*S*deltat + sigma*S*squareroot*randn;
+           Sprime = Sprime + r*Sprime*deltat + sigma*Sprime*squareroot*randn;
         end
         V(i) = max(S-K,0);
-        Vprime(i) = max(Sprime-K,0);
+        vprime(i) = max(Sprime-K,0);
     end
 
     EQ = mean(V);
@@ -78,7 +77,6 @@ for j = 1:sizeoft
     V0prime = exp(-r*T)*mean(Vprime);
 
     errorT(j) = abs(V0 - Vexact);
-    deltaMC = (V0-V0prime)/deltaS;
 end
 
 %% Plots
@@ -98,5 +96,4 @@ grid on
 title(['Number of simulations = ' num2str(M(sizeofM))])
 ylabel('Absolute discretization error')
 xlabel('Size of time step')
-errorDelta = abs(deltaMC-Vdelta)
 
